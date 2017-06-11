@@ -17,6 +17,7 @@ def ignore(filename, ignoreList):
 			return True
 	return False
 
+
 functionName =  sys.argv[0]
 configFile = sys.argv[1]
 srcPath = removeSlash(sys.argv[2])
@@ -31,8 +32,8 @@ if os.path.isdir(outputPath):
 	os.system("rm -rf " + outputPath)
 	print "output direction exists, deleted"
 
-javahome = cf.get("java", "jdkhome")
-jarname = cf.get("java", "jarname")
+javahome = cf.get("java", "javaHome")
+jarname = cf.get("java", "jarName")
 javahome = removeSlash(javahome)
 classpath=".:"+javahome+"/lib/dt.jar:"+javahome+"/lib/tools.jar"
 
