@@ -65,6 +65,7 @@ def excludeFileAndFolder(fileList, *ignore):
 			result.append(file)
 	return result
 
+#提取制定的文件
 def extractFile(fileList, *include):
 	result = []
 	for file in fileList:
@@ -110,7 +111,7 @@ otherFiles  = excludeFileAndFolder(files, [".java"])
 #如果没有其他文件,将otherFiles设置成空字符串
 if len(otherFiles) == 0:
 	otherFiles = ""
-
+#需要添加的功能1.拷贝src下的配置文件到output目录,2.拷贝jar包到output/lib目录
 print "----------------------Parameters----------------------"
 print "javaHome:" + javaHome 
 print "classPath:" + classPath
@@ -120,7 +121,9 @@ print "sourceFiles:" + sourceFiles
 print "otherFiles:" + otherFiles
 print "------------------------------------------------------"
 
+#创建标准的输出目录
 conStandardOutput(output)
+
 metaPath = src[0:src.rfind("/")]
 srcMeta = metaPath + "/" + "*.MF"
 status, cmdResult = commands.getstatusoutput("ls " + srcMeta)
@@ -136,6 +139,8 @@ else:
 #生成class文件
 cmd = "javac -cp \"" + classPath + "\" -nowarn -encoding utf-8 -d " + "\"" + output + "\" -sourcepath \"" + src + "\" " +  sourceFiles 
 os.system(cmd)
+
+#打包生成的class文件到jar包中
 os.system(jarCmd)
 print "compile finished"
 
