@@ -10,11 +10,11 @@ param3,java输出文件的位置,如/root/output
 1.在进行编译时,一定要设置config文件中的javaHome;
 2.所有参数的路径都是绝对路径,不要使用相对路径;
 3.对于编译的源文件目录一定不能含有空格
-4.需要在config文件中配置生成jar包的名称,如test.jar,详情参考当前目录下的config.cfg文件
 
 所编译的工程目录结构:
-|-----src
-       |-----edu.njupt....
-       |-----config.properties
-|-----lib
-|-----MANIFEST.MF
+TestProject
+	|-----src
+	       |-----edu.njupt....
+	       |-----config.properties
+	|-----lib
+	|-----MANIFEST.MF

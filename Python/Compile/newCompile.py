@@ -23,7 +23,7 @@ def removeSlash(path):
 	else:
 		return path
 
-#拼接命令,args的长度为一条命令中参数的个数
+#拼接,args的长度为一条命令中参数的个数
 def splice(template, *args):
 	result = template 
 	if len(args) <= 0:
@@ -38,7 +38,15 @@ def splice(template, *args):
 			params.append(arg[i])
 		result += template.format(*params)
 	return result
-		
+#拼接cp指令
+def spliceCpy(template, src, out, files):
+	source = []
+	target = []
+	for file in files:
+		source.append(src + "/" + file)
+		target.append(out + "/" + file)
+	return splice(template, source, target)
+	
 #从输入的数组中排除制定的文件或者文件夹,ignore[0]要忽略的文件,ignore[1]要忽略的文件夹
 #忽略列表可以什么都不传,可以值传忽略文件,但是不可以只传忽略文件夹
 def excludeFileAndFolder(fileList, *ignore):
@@ -96,7 +104,6 @@ cfg = sys.argv[1]
 cf = ConfigParser.ConfigParser()    
 cf.read(cfg)
 javaHome = removeSlash(cf.get("java", "javaHome"))
-jarName = cf.get("java", "jarName")
 src = removeSlash(sys.argv[2])
 libPath = src[0:src.rfind("/")] + "/lib"
 output = removeSlash(sys.argv[3])
@@ -107,26 +114,36 @@ classPath += ":" + libPath + "/" +  (":" + libPath + "/").join(dependencies)
 files = getFiles(src)
 sourceFiles = src + "/" +  (" " + src + "/").join(extractFile(files, ".java"))
 otherFiles  = excludeFileAndFolder(files, [".java"])
-
-#如果没有其他文件,将otherFiles设置成空字符串
+print otherFiles
+#生成src目录下其他文件的拷贝命令
 if len(otherFiles) == 0:
-	otherFiles = ""
-#需要添加的功能1.拷贝src下的配置文件到output目录,2.拷贝jar包到output/lib目录
+	cpOtherFiles = ""
+else:
+	cpOtherFiles = spliceCpy("cp {0} {1};", src, output, otherFiles)
+#生成jar包的拷贝命令
+if len(dependencies) == 0:
+	cpJarFiles = ""
+else:
+	cpJarFiles = spliceCpy("cp {0} {1}; ", libPath, output + "/lib", dependencies)
 print "----------------------Parameters----------------------"
 print "javaHome:" + javaHome 
 print "classPath:" + classPath
-print "targetJarName:" + jarName 
 print "libPath:" + libPath 
 print "sourceFiles:" + sourceFiles
-print "otherFiles:" + otherFiles
+print "cpOtherFiles:" + cpOtherFiles
+print "cpJarFiles:" + cpJarFiles
 print "------------------------------------------------------"
 
 #创建标准的输出目录
 conStandardOutput(output)
 
+#拷贝MF文件
 metaPath = src[0:src.rfind("/")]
 srcMeta = metaPath + "/" + "*.MF"
 status, cmdResult = commands.getstatusoutput("ls " + srcMeta)
+
+#将src的上级目录作为生成jar文件的名称
+jarName =  metaPath[metaPath.rfind("/") + 1:] + ".jar"
 
 #如果MF文件存在就拷贝到output/META-INF下,并生成打包的命令
 if status == 0:
@@ -139,7 +156,10 @@ else:
 #生成class文件
 cmd = "javac -cp \"" + classPath + "\" -nowarn -encoding utf-8 -d " + "\"" + output + "\" -sourcepath \"" + src + "\" " +  sourceFiles 
 os.system(cmd)
-
+#拷贝src目录下的其他文件到输出目录
+os.system(cpOtherFiles)
+#拷贝jar包依赖到output的lib目录下
+os.system(cpJarFiles)
 #打包生成的class文件到jar包中
 os.system(jarCmd)
 print "compile finished"
